@@ -2,7 +2,7 @@ let allWords = new Set();
 let guessedWords = [[]];
 let firstEmptySpace = 0;
 
-const words = ["sweet", "onion", "shoes", "heavy", "couch"];
+const words = ["sweet", "onion"];
 let currentWordIndex = 0;
 let currentWord = words[currentWordIndex];
 
