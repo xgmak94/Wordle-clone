@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content = "IE=edge">
+    <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
+    <title>Wordle</title>
+
+    <script src = "js/main.js"></script>
+    <script src = "js/constants.js"></script>
+    <script src = "https://use.fontawesome.com/releases/v5.15.4/js/all.js" data-auto-replace-svg="nest"></script>
+
+    <link rel = "stylesheet" href = "css/styles.css"/>
+    <link rel = "stylesheet" href = "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</head>
+<body>
+    <div id = "container">
+        <div id = "game">
+            <header id = "title"></header>
+            <div id = "board-container">
+                <div id = "board"></div>
+            </div>
+            <div id = "keyboard-container">
+                <div class = "keyboard-row" id = "keyboard-row 1"></div>
+                <div class = "keyboard-row" id = "keyboard-row 2"></div>
+                <div class = "keyboard-row" id = "keyboard-row 3"></div>
+            </div>
+    </div>
+    <div id = "help-modal" class = "modal">
+        <div class = "modal-content">
+          <span class = "close" id = "close-help" justify-content="right">&times;</span>
+
+          <p>Guess the <b>WORDLE</b> in six tries.</p>
+          <p>Each guess must be a valid five-letter word. Hit the enter button to submit.</p>
+          <p>After each guess, the color of the tiles will change to show how close your guess was to the word.</p>
+          <hr/>
+          <img src = "examples.png" id = "examples"/>
+          <hr/>
+          <p>A new <b>WORDLE</b> will be available each day!</p>
+        </div>
+    </div>
+    <div id="stats-modal" class="modal">
+        <div class = "modal-content">
+          <span class = "close" id = "close-stats">&times;</span>
+
+          <h2>STATISTICS</h2>
+          <hr>
+          <h3><b>Total</b>: <span id = "total-played"></span></h3>
+          <h3><b>Wins</b>: <span id = "total-wins"></span></h3>
+          <h3><b>Win %</b>: <span id = "win-pct"></span></h3>
+          <h3><b>Current Streak</b>: <span id="current-streak"></span></h3>
+          <h4>Guess Distribution</h4>
+        </div>
+    </div>
+</body>
+</html>

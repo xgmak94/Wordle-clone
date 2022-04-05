@@ -1,0 +1,2 @@
+var NUM_GUESSES = 6;
+var WORD_LENGTH = 5;
