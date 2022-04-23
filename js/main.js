@@ -83,12 +83,12 @@ function createKeyboard() {
         let ent = document.createElement("button");
         ent.setAttribute("class", "wide-button");
         ent.setAttribute("data-key", "Enter");
-        ent.textContent = "Enter";
+        ent.textContent = "Ent";
     
         let del = document.createElement("button");
         del.setAttribute("class", "wide-button");
         del.setAttribute("data-key", "Delete");
-        del.textContent = "Delete";
+        del.textContent = "Del";
     
         //adding buttons
         for(let i = 0 ; i < letters.length ; i++) {

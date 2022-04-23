@@ -23,6 +23,7 @@ html, body {
 
 header {
     display: flex;
+    width: 100%;
     align-items: center;
     justify-content: space-evenly;
     border-bottom: 1px solid grey
@@ -38,6 +39,7 @@ header {
 .title {
     color: white;
     font-weight: bold;
+    font-size: 1.5rem;
     text-align: center;
     font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
       "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
@@ -54,13 +56,13 @@ header {
 #board {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-gap: 5px;
+    grid-gap: 10px;
     padding: 10px;
     box-sizing: border-box;
 }
 
 .tile {
-    border: 2px solid rgb(58, 58, 60);
+    border: 2px solid rgb(58, 58, 58);
     min-width: 60px;
     min-height: 60px;
     font-size: 36px;
@@ -87,8 +89,7 @@ header {
 .keyboard-row button {
     font-family: inherit;
     font-weight: bold;
-    /* border: 0;
-    padding: 0; */
+    padding: 0;
     height: 60px;
     cursor: pointer;
     background-color: grey;
@@ -101,11 +102,11 @@ header {
 }
 
 .keyboard-row button.wide-button {
-    flex-grow: 1.5;
+    flex-grow: 1.25;
 }
 
 .spacer-half {
-    flex-grow: 0.5;
+    flex-grow: 0.75;
 }
 
 .modal {
