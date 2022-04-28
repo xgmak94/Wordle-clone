@@ -11,7 +11,6 @@ It's Wordle but you can play as long as you want.
     * Green means a letter is both correct in the word and in the correct spot.
     * Yellow means a letter is in the word but is in a different spot in the word.
     * Gray means a letter is not in the word at all.
-<br>
 
 # Notes
 * Words are randomly chosen from a predetermined list, words.txt.

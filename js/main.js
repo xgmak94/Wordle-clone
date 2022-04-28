@@ -1,22 +1,33 @@
-let allWords = new Set();
-let guessedWords = [[]];
-let firstEmptySpace = 0;
-let currentWord = ""
+let possibleAnswers = new Set(); //store all possible answers
+let possibleGuesses = new Set(); //store all possible guesses
+let guessedWords = [[]]; //store current guesses of the word
+let firstEmptySpace = 0; //store which space to fill in when adding letters to guesses
+let currentWord = ""; //the currently correct word
 
 //game statistics
 let currentStreak = 0;
+let maxStreak = 0;
 let totalWins = 0;
 let totalGames = 0;
 
 function resetGame() {
-    initSetWords();
+    currentWord = getRandomWord();
     guessedWords = [[]];
-    firstEmptySpace = 0;
-    currentWord = "";
-    clearGuesses();
+    firstEmptySpace = 0; //reset back to first spot
+    clearGuesses(); // clear tiles
+}
+
+function getRandomWord() {
+    let idx = Math.floor(Math.random() * possibleAnswers.size);
+    let items = [];
+    possibleAnswers.forEach(v => items.push(v));
+
+    console.log(items[idx]);
+    return items[idx];
 }
 
 function clearGuesses() {
+    //get and clear all tiles
     for(let i = 0 ; i < NUM_GUESSES*WORD_LENGTH ; i++) {
         const tile = document.getElementById(i);
         tile.textContent = undefined;
@@ -24,22 +35,26 @@ function clearGuesses() {
     }
 }
 
-async function initSetWords() { //initializes a set containing all valid words from `words.txt` file
-    function getRandomWord() {
-        let items = [];
-        allWords.forEach(v => items.push(v));
-        currentWord = items[Math.floor(Math.random() * items.length)]
-        console.log(currentWord);
-    }
-    await fetch('words.txt')
-        .then(response => response.text())
-        .then(data => {
-            all = data.split(/\r?\n/);
-            all.forEach(word => {
-                allWords.add(word);
-            });
+async function initGuesses() {
+    await fetch(guessesFile)
+    .then(response => response.text())
+    .then(data => {
+        all = data.split(/\r?\n/);
+        all.forEach(word => {
+            possibleGuesses.add(word);
         });
-    getRandomWord();
+    });
+}
+
+async function initAnswers() {
+    await fetch(answersFile)
+    .then(response => response.text())
+    .then(data => {
+        all = data.split(/\r?\n/);
+        all.forEach(word => {
+            possibleAnswers.add(word);
+        });
+    });
 }
 
 function createHeader() {
@@ -82,13 +97,13 @@ function createKeyboard() {
     
         let ent = document.createElement("button");
         ent.setAttribute("class", "wide-button");
-        ent.setAttribute("data-key", "Enter");
-        ent.textContent = "Ent";
+        ent.setAttribute("data-key", "enter");
+        ent.textContent = "ent";
     
         let del = document.createElement("button");
         del.setAttribute("class", "wide-button");
-        del.setAttribute("data-key", "Delete");
-        del.textContent = "Del";
+        del.setAttribute("data-key", "delete");
+        del.textContent = "del";
     
         //adding buttons
         for(let i = 0 ; i < letters.length ; i++) {
@@ -116,17 +131,17 @@ function createKeyboard() {
 
 function keyboardListeners() {
     //create listeners for keys
-    const keys = document.querySelectorAll(".keyboard-row button");
-    for(let i = 0 ; i < keys.length ; i++) {
-        keys[i].onclick = ({target}) => {
+    const allKeys = document.querySelectorAll(".keyboard-row button");
+    for(let i = 0 ; i < allKeys.length ; i++) {
+        allKeys[i].onclick = ({target}) => {
             const key = target.getAttribute("data-key");
-            update(key); //update depending on the key pressed
+            update(key); //update depending, pass in data-key to know what to do
         };
     }
 }
 
 function isValidWord(word) {
-    return allWords.has(word);
+    return possibleGuesses.has(word) || possibleAnswers.has(word);
 }
 
 function getCurrentGuess() { //will return last word as an array
@@ -139,81 +154,97 @@ function getCurrentWord() {
 }
 
 function update(key) { //if we pressed a letter
+    //TODO:MAKE A BETTER IMPLEMENTATION OF THE COMPARISON BETWEEN WORD AND GUESSED WORD
     async function updateEnter() { //enter pressed
-        function compareLetter(letter, guess, index) { //checks if letter exists in correct word
-            let word = getCurrentWord();
-            if(word.charAt(index) == letter) { // letter and position are correct
-                return `rgb(83, 141, 78)`;
+        function compareGuess(guess, actual) { //will return an array of length WORD_LENGTH, containing the colors to change
+            let colors = Array(5).fill(grey);
+            let map = new Map();
+            for(let i = 0 ; i < WORD_LENGTH ; i++) {
+                let c = actual.charAt(i);
+                if(!map.has(c)) map.set(c, 0);
+                map.set(c, map.get(c) + 1);
             }
-            else if(word.includes(letter)) {
-                return `rgb(181, 159, 59)`;
+
+            for(let i = 0 ; i < WORD_LENGTH ; i++) { //correct letter and position
+                if(guess.charAt(i) == actual.charAt(i)) {
+                    map.set(guess.charAt(i), map.get(i) - 1);
+                    colors[i] = green;
+                }
             }
-            else {
-                return `rgb(58, 58, 60)`;
+
+            for(let i = 0 ; i < WORD_LENGTH ; i++) {
+                let c = guess.charAt(i);
+                if(colors[i] == grey && actual.includes(c) && map.get(c) > 0) {
+                    map.set(c, map.get(c) - 1);
+                    colors[i] = yellow;
+                }
             }
+            return colors;
         }
 
-        const curr = getCurrentGuess();
-        const guess = curr.join("");
-
-        //Guess is not legal, ERROR MESSAGE
-        if(curr.length != WORD_LENGTH || !isValidWord(guess)) {
+        let currentGuess = getCurrentGuess().join(""); //join together string
+        let actualWord = getCurrentWord();
+        // guess is not legal, ERROR MESSAGE
+        if(currentGuess.length != WORD_LENGTH || !isValidWord(currentGuess)) {
             if(curr.length != WORD_LENGTH) {
                 window.alert("Not enough letters");
             }
-            else if(!isValidWord(guess)) {
+            else if(!isValidWord(currentGuess)) {
                 window.alert("Not in word list");
             }
             return;
         }
 
         //loop through letters to change background colors
-        for(let i = 0 ; i < curr.length ; i++) {
+        let colors = compareGuess(currentGuess, actualWord);
+        for(let i = 0 ; i < WORD_LENGTH ; i++) {
             tile = document.getElementById((guessedWords.length-1)*WORD_LENGTH + i);
             tile.classList.add("animate__animated", "animate__flipInX");
-            tile.style.backgroundColor = compareLetter(curr[i], guess, i); //set color depending on letter
+            tile.style.backgroundColor = colors[i]; //set color depending on letter
         }
         
-        if(guess == getCurrentWord()) { //correct guess
+        if(currentGuess == actualWord) { //GUESS IS CORRECT
             window.alert("Congratulations, You won!");
             currentStreak++;
             totalWins++;
             totalGames++;
+
             resetGame();
             updateStatsModal();
         }
-        else { //guess is wrong
-            if(guessedWords.length == NUM_GUESSES) { //out of chances, display correct answer
-                window.alert(`Sorry, you have no more guesses! The word was ${currentWord}.`);
+        else { //GUESS IS WRONG
+            if(guessedWords.length == NUM_GUESSES) { //NO MORE CHANCES REVEAL CORRECT ANSWER
+                window.alert(`Sorry, you have no more guesses! The word was ${actualWord}.`);
                 currentStreak = 0;
                 totalGames++;
+
                 resetGame();
                 updateStatsModal();
             }
-            else { //guess was wrong we still have a chance
+            else { //WE STILL HAVE MORE CHANCES
                 guessedWords.push([]);
             }
         }
     }
     
     function updateDelete() { //delete key pressed
-        const currentWord = getCurrentGuess();
-        currentWord.pop();
+        let currentGuess = getCurrentGuess();
+        currentGuess.pop();
         
-        guessedWords[guessedWords.length-1] = currentWord;
+        guessedWords[guessedWords.length-1] = currentGuess;
         
-        const lastLetterElement = document.getElementById(String((guessedWords.length-1)*WORD_LENGTH + currentWord.length));
-        lastLetterElement.textContent = '';
+        const lastLetterElement = document.getElementById(String((guessedWords.length-1)*WORD_LENGTH + currentGuess.length));
+        lastLetterElement.textContent = undefined; // clears the last tile
     
-        if(firstEmptySpace > (guessedWords.length-1)*WORD_LENGTH) { //limit to only current word
+        if(firstEmptySpace > (guessedWords.length-1)*WORD_LENGTH) { //MAKE SURE WE DO NOT GO BACK TO PREVIOUS WORD
             firstEmptySpace--;
         }
     }
     
     function updateLetter(key) { //any letter key pressed
-        const currentWord = getCurrentGuess();
-        if(currentWord && currentWord.length < WORD_LENGTH) {
-            currentWord.push(key.toLowerCase()); //store the words as lowercase
+        const currentGuess = getCurrentGuess();
+        if(currentGuess && currentGuess.length < WORD_LENGTH) { //CAN ONLY ADD LETTERS
+            currentGuess.push(key.toLowerCase()); //store the words as lowercase
             const element = document.getElementById(firstEmptySpace);
     
             firstEmptySpace++;
@@ -221,10 +252,10 @@ function update(key) { //if we pressed a letter
         }
     }
 
-    if(key == "Enter") { //enter pressed
+    if(key == "enter") { //enter pressed
         updateEnter();
     }
-    else if(key == "Delete") { //delete pressed
+    else if(key == "delete") { //delete pressed
         updateDelete();
     }
     else { //letter pressed
@@ -279,16 +310,22 @@ function updateStatsModal() {
     document.getElementById("total-wins").textContent = totalWins;
     document.getElementById("current-streak").textContent = currentStreak;
 
+    if(currentStreak > maxStreak) maxStreak = currentStreak;
+    document.getElementById("max-streak").textContent = maxStreak;
+
     const winPercent = Math.round((totalWins / totalGames) * 100) || 0;
     document.getElementById("win-pct").textContent = winPercent;
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    createHeader();
+    await initAnswers();
+    await initGuesses();
+
+    createHeader(); //header
     initHelpModal(); //help button for header
     initStatsModal(); //stats button for header
 
-    createGuessTiles(); //create 6x5 for guesses
+    createGuessTiles(); //create 6x5 tiles for guesses
     createKeyboard(); //create keyboard buttons
     keyboardListeners(); //listeners for keyboard
     
