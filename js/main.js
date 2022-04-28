@@ -1,10 +1,13 @@
+//STORE WORDS
 let possibleAnswers = new Set(); //store all possible answers
 let possibleGuesses = new Set(); //store all possible guesses
+
+//STORE CURRENT INFORMATION
 let guessedWords = [[]]; //store current guesses of the word
 let firstEmptySpace = 0; //store which space to fill in when adding letters to guesses
 let currentWord = ""; //the currently correct word
 
-//game statistics
+//GAME STATISTICS
 let currentStreak = 0;
 let maxStreak = 0;
 let totalWins = 0;
